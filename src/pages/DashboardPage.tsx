@@ -8,7 +8,7 @@ import { MonthYearPicker } from '../components/navigation/MonthYearPicker';
 import { SettingsPanel } from '../components/settings/SettingsPanel';
 
 export function DashboardPage() {
-  const { monthData, currentMonth, currentYear, setMonth, updateCell, loading, error } = useHabits();
+  const { monthData, currentMonth, currentYear, setMonth, updateCell, renameHabit, loading, error } = useHabits();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const handleCellClick = (day: number, habitIndex: number) => {
@@ -46,7 +46,7 @@ export function DashboardPage() {
             <div className="w-8 h-8 border-3 border-gray-300 border-t-green-500 rounded-full animate-spin" />
           </div>
         ) : monthData ? (
-          <PolarChart data={monthData} onCellClick={handleCellClick} />
+          <PolarChart data={monthData} onCellClick={handleCellClick} onRenameHabit={renameHabit} />
         ) : null}
       </PageContainer>
 

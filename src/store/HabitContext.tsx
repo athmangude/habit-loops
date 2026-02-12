@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
 import type { CellValue, MonthData, HabitState, HabitActions } from '../types/habit';
 import { findOrCreateFolder, findOrCreateSpreadsheet } from '../services/driveService';
-import { readMonthData, addHabitColumn, removeHabitColumn, reorderHabitColumns } from '../services/sheetsService';
+import { readMonthData, addHabitColumn, removeHabitColumn, renameHabitColumn, reorderHabitColumns } from '../services/sheetsService';
 import { syncQueue } from '../services/syncQueue';
 import { useAuth } from './AuthContext';
 
@@ -139,6 +139,26 @@ export function HabitProvider({ children }: { children: ReactNode }) {
     }
   }, [spreadsheetId, currentMonth, currentYear, loadData]);
 
+  const renameHabit = useCallback(async (habitIndex: number, newName: string) => {
+    if (!spreadsheetId) return;
+    // Optimistic update
+    setMonthData(prev => {
+      if (!prev) return prev;
+      const newHabits = [...prev.habits];
+      newHabits[habitIndex] = newName;
+      const newData = { ...prev, habits: newHabits };
+      dataCache.set(`${prev.year}-${prev.month}`, newData);
+      return newData;
+    });
+    try {
+      await renameHabitColumn(spreadsheetId, currentMonth, habitIndex, newName);
+    } catch {
+      // Revert on failure
+      dataCache.delete(`${currentYear}-${currentMonth}`);
+      await loadData(currentMonth, currentYear);
+    }
+  }, [spreadsheetId, currentMonth, currentYear, loadData]);
+
   const reorderHabits = useCallback(async (oldIndex: number, newIndex: number) => {
     if (!spreadsheetId) return;
     setLoading(true);
@@ -161,7 +181,7 @@ export function HabitProvider({ children }: { children: ReactNode }) {
       value={{
         currentMonth, currentYear, monthData, loading, error,
         spreadsheetId, folderId,
-        setMonth, updateCell, addHabit, removeHabit, reorderHabits, refreshData,
+        setMonth, updateCell, addHabit, removeHabit, renameHabit, reorderHabits, refreshData,
       }}
     >
       {children}

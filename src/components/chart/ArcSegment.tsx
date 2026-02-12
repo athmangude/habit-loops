@@ -7,12 +7,13 @@ interface ArcSegmentProps {
   value: CellValue;
   day: number;
   habitName: string;
-  onClick: () => void;
+  onClick?: () => void;
 }
 
 export function ArcSegment({ path, value, day, habitName, onClick }: ArcSegmentProps) {
   const [hovered, setHovered] = useState(false);
-  const color = hovered ? getHoverColor(value) : getCellColor(value);
+  const interactive = !!onClick;
+  const color = hovered && interactive ? getHoverColor(value) : getCellColor(value);
 
   return (
     <path
@@ -20,10 +21,10 @@ export function ArcSegment({ path, value, day, habitName, onClick }: ArcSegmentP
       fill={color}
       stroke="#fff"
       strokeWidth={0.5}
-      className="cursor-pointer transition-colors"
+      className={interactive ? 'cursor-pointer transition-colors' : 'transition-colors'}
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={interactive ? () => setHovered(true) : undefined}
+      onMouseLeave={interactive ? () => setHovered(false) : undefined}
     >
       <title>{`${habitName} - Day ${day}: ${value === null ? 'Not tracked' : value}`}</title>
     </path>

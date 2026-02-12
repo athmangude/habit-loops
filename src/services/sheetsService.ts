@@ -219,6 +219,25 @@ export async function removeHabitColumn(
   void year; // used by caller context
 }
 
+export async function renameHabitColumn(
+  spreadsheetId: string,
+  month: number,
+  habitIndex: number,
+  newName: string,
+): Promise<void> {
+  const sheetName = MONTH_NAMES[month];
+  const col = String.fromCharCode(66 + habitIndex); // B=0, C=1, etc.
+
+  await gapi.client.sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: `'${sheetName}'!${col}1`,
+    valueInputOption: 'RAW',
+    resource: {
+      values: [[newName]],
+    },
+  } as unknown);
+}
+
 export async function reorderHabitColumns(
   spreadsheetId: string,
   month: number,

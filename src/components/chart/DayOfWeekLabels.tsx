@@ -1,15 +1,16 @@
-interface DayLabelPos {
+interface DayOfWeekLabelPos {
   x: number;
   y: number;
+  letter: string;
   day: number;
   angle: number;
 }
 
-interface DayLabelsProps {
-  labels: DayLabelPos[];
+interface DayOfWeekLabelsProps {
+  labels: DayOfWeekLabelPos[];
 }
 
-export function DayLabels({ labels }: DayLabelsProps) {
+export function DayOfWeekLabels({ labels }: DayOfWeekLabelsProps) {
   return (
     <g>
       {labels.map((label) => (
@@ -19,11 +20,11 @@ export function DayLabels({ labels }: DayLabelsProps) {
           y={label.y}
           textAnchor="middle"
           dominantBaseline="middle"
-          fontSize={7}
-          fill="#6b7280"
+          fontSize={5.5}
+          fill="#9ca3af"
           className="select-none pointer-events-none"
         >
-          {label.day}
+          {label.letter}
         </text>
       ))}
     </g>

@@ -27,6 +27,7 @@ export interface HabitActions {
   updateCell: (day: number, habitIndex: number, value: CellValue) => void;
   addHabit: (name: string) => Promise<void>;
   removeHabit: (habitIndex: number) => Promise<void>;
+  renameHabit: (habitIndex: number, newName: string) => Promise<void>;
   reorderHabits: (oldIndex: number, newIndex: number) => Promise<void>;
   refreshData: () => Promise<void>;
 }
