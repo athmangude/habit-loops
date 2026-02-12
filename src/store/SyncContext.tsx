@@ -28,6 +28,7 @@ export function SyncProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSyncStatus() {
   return useContext(SyncContext);
 }
