@@ -16,6 +16,37 @@ const STORAGE_KEY_TOKEN = 'habit_loops_access_token';
 const STORAGE_KEY_USER = 'habit_loops_user';
 const STORAGE_KEY_EXPIRY = 'habit_loops_token_expiry';
 
+// In-memory fallback storage when localStorage is unavailable
+const memoryStorage: Record<string, string> = {};
+
+// Safe localStorage wrapper functions
+function safeSetItem(key: string, value: string): void {
+  try {
+    localStorage.setItem(key, value);
+  } catch (error) {
+    console.warn('localStorage.setItem failed, using in-memory storage:', error);
+    memoryStorage[key] = value;
+  }
+}
+
+function safeGetItem(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch (error) {
+    console.warn('localStorage.getItem failed, using in-memory storage:', error);
+    return memoryStorage[key] ?? null;
+  }
+}
+
+function safeRemoveItem(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch (error) {
+    console.warn('localStorage.removeItem failed, using in-memory storage:', error);
+    delete memoryStorage[key];
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<GoogleUser | null>(null);
@@ -24,23 +55,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Helper to save auth data to localStorage
   const saveAuthData = useCallback((accessToken: string, userInfo: GoogleUser, expiresIn: number) => {
-    localStorage.setItem(STORAGE_KEY_TOKEN, accessToken);
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userInfo));
+    safeSetItem(STORAGE_KEY_TOKEN, accessToken);
+    safeSetItem(STORAGE_KEY_USER, JSON.stringify(userInfo));
     // Store expiry time (current time + expires_in seconds)
     const expiryTime = Date.now() + (expiresIn * 1000);
-    localStorage.setItem(STORAGE_KEY_EXPIRY, expiryTime.toString());
+    safeSetItem(STORAGE_KEY_EXPIRY, expiryTime.toString());
   }, []);
 
   // Helper to clear auth data from localStorage
   const clearAuthData = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY_TOKEN);
-    localStorage.removeItem(STORAGE_KEY_USER);
-    localStorage.removeItem(STORAGE_KEY_EXPIRY);
+    safeRemoveItem(STORAGE_KEY_TOKEN);
+    safeRemoveItem(STORAGE_KEY_USER);
+    safeRemoveItem(STORAGE_KEY_EXPIRY);
   }, []);
 
   // Helper to check if token is expired
   const isTokenExpired = useCallback(() => {
-    const expiryTime = localStorage.getItem(STORAGE_KEY_EXPIRY);
+    const expiryTime = safeGetItem(STORAGE_KEY_EXPIRY);
     if (!expiryTime) return true;
     // Ensure the stored expiry is a strictly numeric integer string
     if (!/^\d+$/.test(expiryTime)) {
@@ -62,8 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Restore session from localStorage
   useEffect(() => {
     loadGapiClient().then(() => {
-      const storedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
-      const storedUser = localStorage.getItem(STORAGE_KEY_USER);
+      const storedToken = safeGetItem(STORAGE_KEY_TOKEN);
+      const storedUser = safeGetItem(STORAGE_KEY_USER);
 
       if (storedToken && storedUser && !isTokenExpired()) {
         try {
