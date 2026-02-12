@@ -42,8 +42,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isTokenExpired = useCallback(() => {
     const expiryTime = localStorage.getItem(STORAGE_KEY_EXPIRY);
     if (!expiryTime) return true;
-    const parsedExpiry = parseInt(expiryTime, 10);
-    if (Number.isNaN(parsedExpiry)) {
+    // Ensure the stored expiry is a strictly numeric integer string
+    if (!/^\d+$/.test(expiryTime)) {
+      // Invalid expiry value, clear stored auth data and treat as expired
+      localStorage.removeItem(STORAGE_KEY_TOKEN);
+      localStorage.removeItem(STORAGE_KEY_USER);
+      localStorage.removeItem(STORAGE_KEY_EXPIRY);
+      return true;
+    }
+    const parsedExpiry = Number(expiryTime);
+    if (!Number.isFinite(parsedExpiry) || !Number.isSafeInteger(parsedExpiry)) {
       // Invalid expiry value, clear stored auth data and treat as expired
       localStorage.removeItem(STORAGE_KEY_TOKEN);
       localStorage.removeItem(STORAGE_KEY_USER);
