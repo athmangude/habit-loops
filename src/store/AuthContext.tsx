@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           clearAuthData();
         }
       } else if (storedToken) {
-        // Token exists but is expired, clear it
+        // Token exists but auth state is incomplete or invalid (expired token, missing/corrupt user data, or missing expiry)
         clearAuthData();
       }
 
