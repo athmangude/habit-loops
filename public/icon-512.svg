@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="64" fill="#111827"/>
+  <g transform="translate(256,256)">
+    <!-- Outer ring arc (270 degrees) -->
+    <path d="M 0,-190 A 190,190 0 1,1 -190,0" fill="none" stroke="#22c55e" stroke-width="36" stroke-linecap="round"/>
+    <!-- Inner ring arc -->
+    <path d="M 0,-120 A 120,120 0 1,1 -120,0" fill="none" stroke="#eab308" stroke-width="36" stroke-linecap="round"/>
+    <!-- Center dot -->
+    <circle r="28" fill="#fff"/>
+  </g>
+</svg>
