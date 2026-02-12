@@ -34,7 +34,7 @@ function safeGetItem(key: string): string | null {
     return localStorage.getItem(key);
   } catch (error) {
     console.warn('localStorage.getItem failed, using in-memory storage:', error);
-    return memoryStorage[key] || null;
+    return memoryStorage[key] ?? null;
   }
 }
 
