@@ -75,6 +75,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setGapiReady(true);
       setLoading(false);
+    }).catch((error) => {
+      console.error('Failed to load Google API client:', error);
+      clearAuthData();
+      setGapiReady(false);
+      setLoading(false);
     });
   }, [isTokenExpired, clearAuthData]);
 
