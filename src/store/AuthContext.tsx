@@ -45,11 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const parsedExpiry = parseInt(expiryTime, 10);
     if (Number.isNaN(parsedExpiry)) {
       // Invalid expiry value, clear stored auth data and treat as expired
-      clearAuthData();
+      localStorage.removeItem(STORAGE_KEY_TOKEN);
+      localStorage.removeItem(STORAGE_KEY_USER);
+      localStorage.removeItem(STORAGE_KEY_EXPIRY);
       return true;
     }
     return Date.now() >= parsedExpiry;
-  }, [clearAuthData]);
+  }, []);
 
   // Restore session from localStorage
   useEffect(() => {
