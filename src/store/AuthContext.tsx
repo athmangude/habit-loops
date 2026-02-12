@@ -51,11 +51,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     loadGapiClient().then(() => {
       // One-time migration: clear old localStorage data if it exists
-      // This ensures users don't have tokens lingering in localStorage
-      if (localStorage.getItem(STORAGE_KEY_TOKEN)) {
+      // Using a flag to ensure this only runs once per user
+      const migrationKey = 'habit_loops_migration_completed';
+      if (!localStorage.getItem(migrationKey)) {
         localStorage.removeItem(STORAGE_KEY_TOKEN);
         localStorage.removeItem(STORAGE_KEY_USER);
         localStorage.removeItem(STORAGE_KEY_EXPIRY);
+        localStorage.setItem(migrationKey, 'true');
       }
 
       const storedToken = sessionStorage.getItem(STORAGE_KEY_TOKEN);
