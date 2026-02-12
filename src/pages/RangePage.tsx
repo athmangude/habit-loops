@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useHabits } from '../store/HabitContext';
 import { Header } from '../components/layout/Header';
@@ -22,33 +22,43 @@ export function RangePage() {
   const [rangeData, setRangeData] = useState<MonthData[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const loadRange = useCallback(async () => {
+  useEffect(() => {
     if (!folderId) return;
-    setLoading(true);
+    
+    let cancelled = false;
+    const currentFolderId = folderId; // Capture for closure
+    
+    async function loadRange() {
+      setLoading(true);
 
-    const months: MonthData[] = [];
-    let y = fromYear;
-    let m = fromMonth;
+      const months: MonthData[] = [];
+      let y = fromYear;
+      let m = fromMonth;
 
-    while (y < toYear || (y === toYear && m <= toMonth)) {
-      const ssId = await findOrCreateSpreadsheet(folderId, y);
-      const data = await readMonthData(ssId, y, m);
-      months.push(data);
+      while (y < toYear || (y === toYear && m <= toMonth)) {
+        const ssId = await findOrCreateSpreadsheet(currentFolderId, y);
+        const data = await readMonthData(ssId, y, m);
+        months.push(data);
 
-      m++;
-      if (m > 12) {
-        m = 1;
-        y++;
+        m++;
+        if (m > 12) {
+          m = 1;
+          y++;
+        }
+      }
+
+      if (!cancelled) {
+        setRangeData(months);
+        setLoading(false);
       }
     }
-
-    setRangeData(months);
-    setLoading(false);
-  }, [folderId, fromMonth, fromYear, toMonth, toYear]);
-
-  useEffect(() => {
+    
     loadRange();
-  }, [loadRange]);
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [folderId, fromMonth, fromYear, toMonth, toYear]);
 
   const handleCellClick = (_monthIndex: number, day: number, habitIndex: number) => {
     const data = rangeData[_monthIndex];
