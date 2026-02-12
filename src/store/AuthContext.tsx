@@ -12,6 +12,8 @@ interface AuthState {
 
 const AuthContext = createContext<AuthState | null>(null);
 
+// Using sessionStorage instead of localStorage for better security against XSS
+// Tokens are cleared when the browser tab/window is closed
 const STORAGE_KEY_TOKEN = 'habit_loops_access_token';
 const STORAGE_KEY_USER = 'habit_loops_user';
 const STORAGE_KEY_EXPIRY = 'habit_loops_token_expiry';
@@ -22,25 +24,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [gapiReady, setGapiReady] = useState(false);
 
-  // Helper to save auth data to localStorage
+  // Helper to save auth data to sessionStorage (more secure than localStorage)
   const saveAuthData = useCallback((accessToken: string, userInfo: GoogleUser, expiresIn: number) => {
-    localStorage.setItem(STORAGE_KEY_TOKEN, accessToken);
-    localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userInfo));
+    sessionStorage.setItem(STORAGE_KEY_TOKEN, accessToken);
+    sessionStorage.setItem(STORAGE_KEY_USER, JSON.stringify(userInfo));
     // Store expiry time (current time + expires_in seconds)
     const expiryTime = Date.now() + (expiresIn * 1000);
-    localStorage.setItem(STORAGE_KEY_EXPIRY, expiryTime.toString());
+    sessionStorage.setItem(STORAGE_KEY_EXPIRY, expiryTime.toString());
   }, []);
 
-  // Helper to clear auth data from localStorage
+  // Helper to clear auth data from sessionStorage
   const clearAuthData = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY_TOKEN);
-    localStorage.removeItem(STORAGE_KEY_USER);
-    localStorage.removeItem(STORAGE_KEY_EXPIRY);
+    sessionStorage.removeItem(STORAGE_KEY_TOKEN);
+    sessionStorage.removeItem(STORAGE_KEY_USER);
+    sessionStorage.removeItem(STORAGE_KEY_EXPIRY);
   }, []);
 
   // Helper to check if token is expired
   const isTokenExpired = useCallback(() => {
-    const expiryTime = localStorage.getItem(STORAGE_KEY_EXPIRY);
+    const expiryTime = sessionStorage.getItem(STORAGE_KEY_EXPIRY);
     if (!expiryTime) return true;
     // Ensure the stored expiry is a strictly numeric integer string
     if (!/^\d+$/.test(expiryTime)) {
@@ -59,11 +61,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return Date.now() >= parsedExpiry;
   }, [clearAuthData]);
 
-  // Restore session from localStorage
+  // Restore session from sessionStorage
   useEffect(() => {
     loadGapiClient().then(() => {
-      const storedToken = localStorage.getItem(STORAGE_KEY_TOKEN);
-      const storedUser = localStorage.getItem(STORAGE_KEY_USER);
+      // One-time migration: clear old localStorage data if it exists
+      // Using a flag to ensure this only runs once per user
+      const migrationKey = 'habit_loops_migration_completed';
+      if (!localStorage.getItem(migrationKey)) {
+        localStorage.removeItem(STORAGE_KEY_TOKEN);
+        localStorage.removeItem(STORAGE_KEY_USER);
+        localStorage.removeItem(STORAGE_KEY_EXPIRY);
+        localStorage.setItem(migrationKey, 'true');
+      }
+
+      const storedToken = sessionStorage.getItem(STORAGE_KEY_TOKEN);
+      const storedUser = sessionStorage.getItem(STORAGE_KEY_USER);
 
       if (storedToken && storedUser && !isTokenExpired()) {
         try {
@@ -100,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         gapi.client.setToken({ access_token: response.access_token });
         const userInfo = await fetchUserInfo(response.access_token);
         
-        // Save to localStorage with expiry (default to 1 hour if not provided)
+        // Save to sessionStorage with expiry (default to 1 hour if not provided)
         const expiresIn = response.expires_in || 3600;
         saveAuthData(response.access_token, userInfo, expiresIn);
         
