@@ -54,9 +54,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (storedToken && storedUser && !isTokenExpired()) {
         try {
           // Restore the session
-          gapi.client.setToken({ access_token: storedToken });
-          setUser(JSON.parse(storedUser));
-          setIsAuthenticated(true);
+          const parsedUser = JSON.parse(storedUser);
+          // Validate that the parsed user has required fields
+          if (parsedUser && typeof parsedUser === 'object' && parsedUser.email && parsedUser.name) {
+            gapi.client.setToken({ access_token: storedToken });
+            setUser(parsedUser);
+            setIsAuthenticated(true);
+          } else {
+            // Invalid user data, clear storage
+            clearAuthData();
+          }
         } catch (error) {
           console.error('Failed to restore session:', error);
           clearAuthData();
