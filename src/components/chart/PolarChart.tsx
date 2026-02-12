@@ -143,4 +143,5 @@ export function PolarChart({ data, onCellClick, onRenameHabit, showLegend = true
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { cycleValue };

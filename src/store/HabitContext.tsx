@@ -189,6 +189,7 @@ export function HabitProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useHabits() {
   const context = useContext(HabitContext);
   if (!context) throw new Error('useHabits must be used within HabitProvider');
