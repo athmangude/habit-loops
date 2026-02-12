@@ -55,8 +55,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           // Restore the session
           const parsedUser = JSON.parse(storedUser);
-          // Validate that the parsed user has required fields
-          if (parsedUser && typeof parsedUser === 'object' && parsedUser.email && parsedUser.name) {
+          // Validate that the parsed user has all required fields and they are strings
+          if (
+            parsedUser &&
+            typeof parsedUser === 'object' &&
+            typeof parsedUser.name === 'string' &&
+            typeof parsedUser.email === 'string' &&
+            typeof parsedUser.picture === 'string'
+          ) {
             gapi.client.setToken({ access_token: storedToken });
             setUser(parsedUser);
             setIsAuthenticated(true);
