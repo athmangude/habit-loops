@@ -28,6 +28,8 @@ jobs:
       - run: yarn install --frozen-lockfile
 
       - run: yarn build
+        env:
+          VITE_GOOGLE_CLIENT_ID: 1009965944449-q26t4sk5bsh83a5ia3ovtafaijrbl7fv.apps.googleusercontent.com
 
       - uses: actions/upload-pages-artifact@v3
         with:
