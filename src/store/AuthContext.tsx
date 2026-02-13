@@ -43,6 +43,7 @@ function safeRemoveItem(key: string): void {
     localStorage.removeItem(key);
   } catch (error) {
     console.warn('localStorage.removeItem failed, using in-memory storage:', error);
+  } finally {
     delete memoryStorage[key];
   }
 }
