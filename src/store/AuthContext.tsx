@@ -73,7 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isTokenExpired = useCallback(() => {
     const expiryTime = safeGetItem(STORAGE_KEY_EXPIRY);
     if (!expiryTime) return true;
-    return Date.now() >= parseInt(expiryTime);
+    const expiryTimestamp = Number(expiryTime);
+    if (!Number.isFinite(expiryTimestamp)) return true;
+    return Date.now() >= expiryTimestamp;
   }, []);
 
   // Restore session from localStorage
